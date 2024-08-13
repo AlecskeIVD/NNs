@@ -56,4 +56,18 @@ scatter(data(positiveRows, 1), data(positiveRows, 2), 'blue', 'filled')
 scatter(data(negativeRows, 1), data(negativeRows, 2), 'filled', 'MarkerFaceColor', "#EDB120")
 hold off
 
+%% Saving data to .mat file
+
+
+% Permutate data
+permutedIndices = randperm(numberOfPoints);
+permutedData = data(permutedIndices, :);
+%%
+x = permutedData(:, 1);
+y = permutedData(:, 2);
+classification = permutedData(:, 3);
+
+save('data.mat', 'x', 'y', 'classification')
+
+
 
