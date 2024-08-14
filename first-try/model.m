@@ -85,10 +85,51 @@ for iteration=1:iterations
     end
 
 end
-%% PLOTS
+%% PLOT DATA
 plot(wrongtraining)
 hold on
 plot(wrongtest)
 legend('Number of trainingpoints wrong after each iteration','Number of testpoints wrong after each iteration' )
 hold off
 
+%% PLOT UNIT SQUARE
+% Define grid resolution
+resolution = 1000;
+
+% Create grid over [0, 1] x [0, 1]
+[x_grid, y_grid] = meshgrid(linspace(0, 1, resolution), linspace(0, 1, resolution));
+
+% Initialize a matrix to hold the colors
+colorGrid = zeros(resolution, resolution);
+
+% Evaluate yhat at each point in the grid
+for i = 1:resolution
+    for j = 1:resolution
+        yh_val = yhat(x_grid(i, j), y_grid(i, j));
+        if yh_val < 0.5
+            colorGrid(i, j) = 1; % Red for values < 0.5
+        else
+            colorGrid(i, j) = 2; % Blue for values >= 0.5
+        end
+    end
+end
+
+% Plot the result using pcolor or imagesc
+figure;
+hold on;
+% Use imagesc to display the color grid
+imagesc([0 1], [0 1], colorGrid);
+
+% Adjust colormap: 1 -> Red, 2 -> Blue
+colormap([1 0.5 0; 0 0 1]); % Red for 1, Blue for 2
+
+% Set axis properties
+axis xy; % Ensure correct orientation
+axis equal; % Equal scaling of axes
+xlim([0 1]);
+ylim([0 1]);
+xlabel('x');
+ylabel('y');
+title('Plot of yhat after 25.000 iterations');
+
+hold off;
