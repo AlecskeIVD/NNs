@@ -83,6 +83,17 @@ def draw(window: pg.surface, drawing):
     for column in range(len(drawing[0])+1):
         pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X, TOP_LEFT_Y+column*SQUARE_SIZE), (TOP_LEFT_X+len(drawing[0])*SQUARE_SIZE, TOP_LEFT_Y+column*SQUARE_SIZE))
 
+    font = pg.font.Font(None, 18)
+    text_surface = font.render(" Choose between (d)raw mode, (e)raser mode, (p)assive mode or (c)learing the board", True, (255, 255, 255))  # White text
+    text_rect = text_surface.get_rect()
+
+    # Position the text under the board
+    text_rect.center = (TOP_LEFT_X + len(drawing[0]) * SQUARE_SIZE // 2,
+                        TOP_LEFT_Y + len(drawing) * SQUARE_SIZE + 20)
+
+    # Draw the text on the window
+    window.blit(text_surface, text_rect)
+
 
 if __name__ == "__main__":
     main()
