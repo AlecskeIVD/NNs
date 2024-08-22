@@ -7,7 +7,7 @@ WINDOW = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Drawing digits")
 TOP_LEFT_X, TOP_LEFT_Y = 125, 50
 FPS = 120
-RESOLUTION = 5
+RESOLUTION = 6
 SQUARE_SIZE = 24 // RESOLUTION
 
 
@@ -43,7 +43,6 @@ def main():
     clock = pg.time.Clock()
     drawing = [[(i + j) % 2 for i in range(28*RESOLUTION)] for j in range(28*RESOLUTION)]
     input_NN = generate_matrix(drawing)
-    print(input_NN)
     BRUSH_SIZE = RESOLUTION // 2
     while run:
         clock.tick(FPS)
@@ -73,9 +72,10 @@ def main():
                     eraser_mode = False
                     passive_mode = True
                     drawing = [[0 for i in range(28*RESOLUTION)] for j in range(28*RESOLUTION)]
+                    input_NN = generate_matrix(drawing)
                 elif event.unicode.isdigit():  # Only allow numeric input
                     BRUSH_SIZE = int(event.unicode)
-        draw(WINDOW, drawing)
+        draw(WINDOW, drawing, input_NN)
         pg.display.update()
         mouse_pos = pg.mouse.get_pos()
 
@@ -95,35 +95,38 @@ def main():
                         if draw_mode and drawing[n][m] == 0:
                             drawing[n][m] = 1
             input_NN = generate_matrix(drawing)
-            assert np.array_equal(input_NN, generate_matrix2(drawing))
-            print("array: ", input_NN)
-
     pg.quit()
 
 
-def draw(window: pg.surface, drawing):
+def draw(window: pg.surface, drawing, input_NN):
     window.fill((0, 0, 55))
     for row in range(len(drawing)):
         for column in range(len(drawing[row])):
             if drawing[row][column] == 1:
                 pg.draw.rect(window, (255, 255, 255), (TOP_LEFT_X+column*SQUARE_SIZE, TOP_LEFT_Y + row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    input_NN = generate_matrix(drawing)
-
     # We draw image 112x112
     size = int(112/28)
     for i in range(28):
         for j in range(28):
             val = input_NN[i, j]
             pg.draw.rect(window, (val, val, val),
-                         (5+j * size,5+ i * size, size, size))
+                         (5+j * size, 5 + i * size, size, size))
 
 
     # DRAW LINES TO IMPROVE CLARITY BOARD
-    for row in range(len(drawing)+1):
-        pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X+row*SQUARE_SIZE, TOP_LEFT_Y), (TOP_LEFT_X+row*SQUARE_SIZE, TOP_LEFT_Y+len(drawing)*SQUARE_SIZE))
+    #for row in range(len(drawing)+1):
+    #    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X+row*SQUARE_SIZE, TOP_LEFT_Y), (TOP_LEFT_X+row*SQUARE_SIZE, TOP_LEFT_Y+len(drawing)*SQUARE_SIZE))
 
-    for column in range(len(drawing[0])+1):
-        pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X, TOP_LEFT_Y+column*SQUARE_SIZE), (TOP_LEFT_X+len(drawing[0])*SQUARE_SIZE, TOP_LEFT_Y+column*SQUARE_SIZE))
+    #for column in range(len(drawing[0])+1):
+    #    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X, TOP_LEFT_Y+column*SQUARE_SIZE), (TOP_LEFT_X+len(drawing[0])*SQUARE_SIZE, TOP_LEFT_Y+column*SQUARE_SIZE))
+    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X + 0 * SQUARE_SIZE, TOP_LEFT_Y),
+                 (TOP_LEFT_X + 0 * SQUARE_SIZE, TOP_LEFT_Y + len(drawing) * SQUARE_SIZE))
+    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X + len(drawing) * SQUARE_SIZE, TOP_LEFT_Y),
+                 (TOP_LEFT_X + len(drawing) * SQUARE_SIZE, TOP_LEFT_Y + len(drawing) * SQUARE_SIZE))
+    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X, TOP_LEFT_Y + 0 * SQUARE_SIZE),
+                 (TOP_LEFT_X + len(drawing[0]) * SQUARE_SIZE, TOP_LEFT_Y + 0 * SQUARE_SIZE))
+    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X, TOP_LEFT_Y + len(drawing[0]) * SQUARE_SIZE),
+                 (TOP_LEFT_X + len(drawing[0]) * SQUARE_SIZE, TOP_LEFT_Y + len(drawing[0]) * SQUARE_SIZE))
 
     font = pg.font.Font(None, 18)
     text_surface = font.render(" Choose between (d)raw mode, (e)raser mode, (p)assive mode or (c)learing the board", True, (255, 255, 255))  # White text
