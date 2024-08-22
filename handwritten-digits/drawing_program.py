@@ -6,8 +6,8 @@ WINDOW = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Drawing digits")
 TOP_LEFT_X, TOP_LEFT_Y = 100, 50
 FPS = 120
-RESOLUTION = 3
-SQUARE_SIZE = 21 // RESOLUTION
+RESOLUTION = 5
+SQUARE_SIZE = 24 // RESOLUTION
 
 
 def main():
