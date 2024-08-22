@@ -7,7 +7,6 @@ pg.display.set_caption("Drawing digits")
 TOP_LEFT_X, TOP_LEFT_Y = 100, 50
 FPS = 120
 RESOLUTION = 3
-BRUSH_SIZE = RESOLUTION // 2
 SQUARE_SIZE = 21 // RESOLUTION
 
 
@@ -18,6 +17,7 @@ def main():
     run = True
     clock = pg.time.Clock()
     drawing = [[(i + j) % 2 for i in range(28*RESOLUTION)] for j in range(28*RESOLUTION)]
+    BRUSH_SIZE = RESOLUTION // 2
     while run:
         clock.tick(FPS)
         for event in pg.event.get():
@@ -46,6 +46,8 @@ def main():
                     eraser_mode = False
                     passive_mode = True
                     drawing = [[0 for i in range(28*RESOLUTION)] for j in range(28*RESOLUTION)]
+                elif event.unicode.isdigit():  # Only allow numeric input
+                    BRUSH_SIZE = int(event.unicode)
         draw(WINDOW, drawing)
         pg.display.update()
         mouse_pos = pg.mouse.get_pos()
