@@ -7,7 +7,7 @@ WINDOW = pg.display.set_mode((WIDTH, HEIGHT))
 pg.display.set_caption("Drawing digits")
 TOP_LEFT_X, TOP_LEFT_Y = 125, 50
 FPS = 120
-RESOLUTION = 6
+RESOLUTION = 12
 SQUARE_SIZE = 24 // RESOLUTION
 
 
@@ -26,12 +26,12 @@ def generate_matrix2(drawing):
 
 def generate_matrix(drawing):
     drawing_np = np.array(drawing, dtype=np.int16)
-    factor = 255 / (RESOLUTION ** 2)
+    # factor = 255 / (RESOLUTION ** 2)
     output = np.zeros((28, 28), np.int16)
     for i in range(28):
         for j in range(28):
             block = drawing_np[i * RESOLUTION:(i + 1) * RESOLUTION, j * RESOLUTION:(j + 1) * RESOLUTION]
-            output[i, j] = round(block.sum() * factor)
+            output[i, j] = block.sum()
     return output
 
 
@@ -71,8 +71,8 @@ def main():
                     draw_mode = False
                     eraser_mode = False
                     passive_mode = True
-                    drawing = [[0 for i in range(28*RESOLUTION)] for j in range(28*RESOLUTION)]
-                    input_NN = generate_matrix(drawing)
+                    drawing = [[0 for _ in range(28 * RESOLUTION)] for _ in range(28 * RESOLUTION)]
+                    input_NN = np.zeros((28, 28), np.int16)
                 elif event.unicode.isdigit():  # Only allow numeric input
                     BRUSH_SIZE = int(event.unicode)
         draw(WINDOW, drawing, input_NN)
@@ -85,16 +85,19 @@ def main():
             if i < len(drawing) and j < len(drawing[0]):
                 if eraser_mode and drawing[i][j] == 1:
                     drawing[i][j] = 0
+                    input_NN[i//RESOLUTION, j//RESOLUTION] -= 1
                 if draw_mode and drawing[i][j] == 0:
                     drawing[i][j] = 1
+                    input_NN[i // RESOLUTION, j // RESOLUTION] += 1
             for n in range(max(i-BRUSH_SIZE, 0), min(i+BRUSH_SIZE+1, len(drawing))):
                 for m in range(max(j-BRUSH_SIZE, 0), min(j+BRUSH_SIZE+1, len(drawing[0]))):
                     if n != i or m != j:
                         if eraser_mode and drawing[n][m] == 1:
                             drawing[n][m] = 0
+                            input_NN[n // RESOLUTION, m // RESOLUTION] -= 1
                         if draw_mode and drawing[n][m] == 0:
                             drawing[n][m] = 1
-            input_NN = generate_matrix(drawing)
+                            input_NN[n // RESOLUTION, m // RESOLUTION] += 1
     pg.quit()
 
 
@@ -104,20 +107,21 @@ def draw(window: pg.surface, drawing, input_NN):
         for column in range(len(drawing[row])):
             if drawing[row][column] == 1:
                 pg.draw.rect(window, (255, 255, 255), (TOP_LEFT_X+column*SQUARE_SIZE, TOP_LEFT_Y + row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-    # We draw image 112x112
+
+    # We draw input image 112x112
     size = int(112/28)
+    factor = 255 / (RESOLUTION ** 2)
     for i in range(28):
         for j in range(28):
-            val = input_NN[i, j]
+            val = round(input_NN[i, j] * factor)
             pg.draw.rect(window, (val, val, val),
                          (5+j * size, 5 + i * size, size, size))
 
-
     # DRAW LINES TO IMPROVE CLARITY BOARD
-    #for row in range(len(drawing)+1):
+    # for row in range(len(drawing)+1):
     #    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X+row*SQUARE_SIZE, TOP_LEFT_Y), (TOP_LEFT_X+row*SQUARE_SIZE, TOP_LEFT_Y+len(drawing)*SQUARE_SIZE))
 
-    #for column in range(len(drawing[0])+1):
+    # for column in range(len(drawing[0])+1):
     #    pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X, TOP_LEFT_Y+column*SQUARE_SIZE), (TOP_LEFT_X+len(drawing[0])*SQUARE_SIZE, TOP_LEFT_Y+column*SQUARE_SIZE))
     pg.draw.line(window, (0, 0, 0), (TOP_LEFT_X + 0 * SQUARE_SIZE, TOP_LEFT_Y),
                  (TOP_LEFT_X + 0 * SQUARE_SIZE, TOP_LEFT_Y + len(drawing) * SQUARE_SIZE))
