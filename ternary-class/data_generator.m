@@ -1,8 +1,8 @@
 %% This script will generate the data for a ternary classification problem in 2 dimensions.
 clear all
 rng('default')
-numberOfRows = 25;
-numberOfColumns = 25;
+numberOfRows = 25*2;
+numberOfColumns = 25*2;
 numberOfPoints = numberOfRows * numberOfColumns;
 sigma = 0.0625/2;
 
