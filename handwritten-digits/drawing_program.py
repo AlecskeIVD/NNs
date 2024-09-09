@@ -1,5 +1,6 @@
 import pygame as pg
 import numpy as np
+from scipy.io import loadmat
 
 pg.init()
 WIDTH, HEIGHT = 1440, 770
@@ -9,30 +10,38 @@ TOP_LEFT_X, TOP_LEFT_Y = 125, 50
 FPS = 120
 RESOLUTION = 12
 SQUARE_SIZE = 24 // RESOLUTION
+weights = loadmat("weights.mat")
+W1 = weights["W1"]
+W2 = weights["W2"]
+W3 = weights["W3"]
+W4 = weights["W4"]
+B1 = weights["B1"]
+B2 = weights["B2"]
+B3 = weights["B3"]
+B4 = weights["B4"]
+fract = 1/(RESOLUTION**2)
 
 
-def generate_matrix2(drawing):
-    output = np.zeros((28, 28), np.int16)
-    factor = 255 / (RESOLUTION**2)
-    for i in range(28):
-        for j in range(28):
-            temp = 0
-            for a in range(RESOLUTION):
-                for b in range(RESOLUTION):
-                    temp += drawing[i*RESOLUTION+a][j*RESOLUTION+b]
-            output[i, j] = round(temp * factor)
-    return output
+def softmax(x: np.ndarray):
+    # Subtract the max value from x for numerical stability
+    e_x = np.exp(x - np.max(x))
+    return e_x / e_x.sum(axis=0)
 
 
 def generate_matrix(drawing):
     drawing_np = np.array(drawing, dtype=np.int16)
-    # factor = 255 / (RESOLUTION ** 2)
-    output = np.zeros((28, 28), np.int16)
-    for i in range(28):
-        for j in range(28):
-            block = drawing_np[i * RESOLUTION:(i + 1) * RESOLUTION, j * RESOLUTION:(j + 1) * RESOLUTION]
-            output[i, j] = block.sum()
+
+    # Reshape the drawing into blocks of size RESOLUTION x RESOLUTION
+    reshaped_drawing = drawing_np.reshape(28, RESOLUTION, 28, RESOLUTION)
+
+    # Sum over each block (axis=(1, 3) sums over RESOLUTION dimensions)
+    output = reshaped_drawing.sum(axis=(1, 3)) * fract
+
     return output
+
+
+def sigmoid(x: np.ndarray) -> np.ndarray:
+    return 1 / (1 + np.exp(-x))
 
 
 def main():
@@ -72,7 +81,13 @@ def main():
                     eraser_mode = False
                     passive_mode = True
                     drawing = [[0 for _ in range(28 * RESOLUTION)] for _ in range(28 * RESOLUTION)]
-                    input_NN = np.zeros((28, 28), np.int16)
+                    input_NN = np.zeros((28, 28), np.double)
+                if event.key == pg.K_m:
+                    vecin = input_NN.flatten(order="F").reshape(-1, 1)
+                    tmp = softmax(W4@sigmoid(W3@sigmoid(W2@sigmoid(W1@vecin+B1)+B2)+B3)+B4)
+                    for i in range(10):
+                        print(f"Probability of {i}: {tmp[i, 0]*100} %")
+
                 elif event.unicode.isdigit():  # Only allow numeric input
                     BRUSH_SIZE = int(event.unicode)
         draw(WINDOW, drawing, input_NN)
@@ -85,19 +100,19 @@ def main():
             if i < len(drawing) and j < len(drawing[0]):
                 if eraser_mode and drawing[i][j] == 1:
                     drawing[i][j] = 0
-                    input_NN[i//RESOLUTION, j//RESOLUTION] -= 1
+                    input_NN[i//RESOLUTION, j//RESOLUTION] -= fract
                 if draw_mode and drawing[i][j] == 0:
                     drawing[i][j] = 1
-                    input_NN[i // RESOLUTION, j // RESOLUTION] += 1
+                    input_NN[i // RESOLUTION, j // RESOLUTION] += fract
             for n in range(max(i-BRUSH_SIZE, 0), min(i+BRUSH_SIZE+1, len(drawing))):
                 for m in range(max(j-BRUSH_SIZE, 0), min(j+BRUSH_SIZE+1, len(drawing[0]))):
                     if n != i or m != j:
                         if eraser_mode and drawing[n][m] == 1:
                             drawing[n][m] = 0
-                            input_NN[n // RESOLUTION, m // RESOLUTION] -= 1
+                            input_NN[n // RESOLUTION, m // RESOLUTION] -= fract
                         if draw_mode and drawing[n][m] == 0:
                             drawing[n][m] = 1
-                            input_NN[n // RESOLUTION, m // RESOLUTION] += 1
+                            input_NN[n // RESOLUTION, m // RESOLUTION] += fract
     pg.quit()
 
 
@@ -110,7 +125,7 @@ def draw(window: pg.surface, drawing, input_NN):
 
     # We draw input image 112x112
     size = int(112/28)
-    factor = 255 / (RESOLUTION ** 2)
+    factor = 255
     for i in range(28):
         for j in range(28):
             val = round(input_NN[i, j] * factor)

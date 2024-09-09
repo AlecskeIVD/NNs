@@ -133,9 +133,11 @@ end
 plot(correcttraining)
 hold on
 plot(correcttest)
-legend('Percentage of trainingpoints correct after each epoch','Percentage of testpoints wrong after each epoch' )
-xlabel(epochs)
+legend('Fraction of trainingpoints correct after each epoch','Fraction of testpoints wrong after each epoch' )
+xlabel("epochs")
 ylabel('fraction of images correct')
 hold off
+%% SAVE WEIGHTS
+save('weights.mat', 'B1', 'B2', 'B3', 'B4', 'W1', 'W2', "W3", "W4");
 
 
