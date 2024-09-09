@@ -31,7 +31,7 @@ yhat = @(imagevector) softmax(zout(imagevector));
 
 %% GRADIENT DESCENT
 alpha = 0.1;
-epochs = 250;
+epochs = 350;
 epochsize = trainsetsize;
 
 % I will divide the dataset into K smaller datasets to implement stochastic
@@ -134,6 +134,8 @@ plot(correcttraining)
 hold on
 plot(correcttest)
 legend('Percentage of trainingpoints correct after each epoch','Percentage of testpoints wrong after each epoch' )
+xlabel(epochs)
+ylabel('fraction of images correct')
 hold off
 
 
