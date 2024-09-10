@@ -139,5 +139,32 @@ ylabel('fraction of images correct')
 hold off
 %% SAVE WEIGHTS
 save('weights.mat', 'B1', 'B2', 'B3', 'B4', 'W1', 'W2', "W3", "W4");
+%% TEST
+for i=1:testsetsize
+    imagevectori = imagestest(:,i);
+    [~, labeli] = max(labelstest(:,i));
+    labeli = labeli-1;
+
+    yh = yhat(imagevectori);
+    [~, class] = max(yh);
+    class = class-1;
+    if (class ~= labeli) && rand(1) > 0.9
+        img = reshape(imagestest(:, i), 28, 28); % Reshape the flattened image back to 28x28
+        label = find(labelstest(:, i) == 1) - 1;
+        disp(yh-labelstest(:,i))
+        figure;
+        imshow(img);
+        title(['Label: ', num2str(label)]);
+    end
+end
+
+%img = reshape(imagestrain(:, index), 28, 28); % Reshape the flattened image back to 28x28
+%label = find(labelstrain(:, index) == 1) - 1; % Find the index of the 1 in one-hot encoding (subtract 1 for label 0-9)
+    
+% Display the image and its corresponding label
+%figure;
+%imshow(img);
+%title(['Label: ', num2str(label)]);
+
 
 

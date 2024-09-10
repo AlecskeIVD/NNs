@@ -13,14 +13,14 @@ testsetsize = size(labelstest, 2);
 upper = 1/sqrt(28*28);
 lower = -upper;
 
-W3 = lower + (upper-lower) * rand(10, 50);
+W3 = lower + (upper-lower) * rand(10, 20);
 B3 = lower + (upper-lower) * rand(10, 1);
 
-W2 = lower + (upper-lower) * rand(50, 100);
-B2 = lower + (upper-lower) * rand(50, 1);
+W2 = lower + (upper-lower) * rand(20, 200);
+B2 = lower + (upper-lower) * rand(20, 1);
 
-W1 = lower + (upper-lower) * rand(100, 28*28);
-B1 = lower + (upper-lower) * rand(100, 1);
+W1 = lower + (upper-lower) * rand(200, 28*28);
+B1 = lower + (upper-lower) * rand(200, 1);
 
 sigma = @(x) 1 ./ (1+exp(-x));
 zout = @(imagevector) (W3*sigma(W2 * sigma(W1 * imagevector + B1) + B2)+B3);
@@ -28,12 +28,12 @@ yhat = @(imagevector) softmax(zout(imagevector));
 
 %% GRADIENT DESCENT
 alpha = 0.1;
-epochs = 250;
+epochs = 100;
 epochsize = trainsetsize;
 
 % I will divide the dataset into K smaller datasets to implement stochastic
 % gradient descent
-K = 250;
+K = 750;
 subsize = epochsize/K;
 
 correcttest = zeros(epochs, 1);
@@ -49,14 +49,14 @@ for epoch=1:epochs
         subtrainlabels = labelstrain(:, trainindices);
 
         % Calculate gradient and change parameters
-        totdW3 = zeros(10, 50);
+        totdW3 = zeros(10, 20);
         totdB3 = zeros(10, 1);
 
-        totdW2 = zeros(50, 100);
-        totdB2 = zeros(50, 1);
+        totdW2 = zeros(20, 200);
+        totdB2 = zeros(20, 1);
 
-        totdW1 = zeros(100, 28*28);
-        totdB1 = zeros(100, 1);
+        totdW1 = zeros(200, 28*28);
+        totdB1 = zeros(200, 1);
         for i=1:subsize
             imagevectori = subtrainimagevectors(:,i);
             [~, labeli] = max(subtrainlabels(:,i));
@@ -121,6 +121,9 @@ end
 plot(correcttraining)
 hold on
 plot(correcttest)
-legend('Percentage of trainingpoints correct after each epoch','Percentage of testpoints wrong after each epoch' )
+legend('Fraction of trainingpoints correct after each epoch','Fraction of testpoints wrong after each epoch' )
+xlabel("Epochs")
 hold off
+%% SAVE WEIGHTS
+save('weights.mat', 'B1', 'B2', 'B3', 'W1', 'W2', "W3");
 
